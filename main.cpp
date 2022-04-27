@@ -1,7 +1,8 @@
 #include <iostream>
-#include <cstdio>
+#include <fstream>
 #include <stdexcept>
 #include <string>
+#include <queue>
 
 using namespace std;
 
@@ -23,11 +24,6 @@ public:
 
     ~knot()
     {
-        if (left && right)
-        {
-            delete[]left;
-            delete[]right;
-        }
         left = nullptr;
         right = nullptr;
     }
@@ -52,46 +48,18 @@ public:
         return *this;
     }
 
-    void hoarrec(int l, int r)
+    bool operator () (const knot& first, const knot& second)
     {
-        knot* array = this;
-        if (l < r)
-        {
-            int i = l, j = r;
-            unsigned long long x = array[(l + r) / 2].k;
-            knot intermediate;
-            while (i <= j)
-            {
-                while (array[i].k > x)
-                    i++;
-                while (array[j].k < x)
-                    j--;
-                if (i <= j)
-                {
-                    intermediate = array[i];
-                    array[i] = array[j];
-                    array[j] = intermediate;
-                    i++;
-                    j--;
-                }
-            }
-            hoarrec(l, j);
-            hoarrec(i, r);
-        }
+        return first.k >= second.k;
     }
 
-    knot merge_knots (knot& descendant)
+    knot* join (knot new_elem)
     {
-        knot ancestor;
-        ancestor.k = k + descendant.k;
-        ancestor.left = this;
-        ancestor.right = &descendant;
-        return ancestor;
+        return new knot( '0' , new_elem.k + k, new knot(new_elem), this);
     }
 
     void coding(knot* tree, string code, string* code_table)
     {
-
         if (tree == nullptr)
             return;
         if (tree->left == nullptr && tree->right == nullptr)
@@ -102,24 +70,18 @@ public:
 
     friend ostream& operator << (ostream& st, const knot& num)
     {
-        st << num.key << ":" << num.k << endl;
+        st << num.key << ":" << num.k;
         return st;
     }
 
 };
 
-void Hoar_sort(knot* array, int length)
+void coder(const char* file_name = "input.txt", const char* encoded_name = "output.txt")
 {
-    array->hoarrec(0, length - 1);
-}
-
-void coder(const char* file_name = "input.txt")
-{
-    unsigned long long* alphabet = new unsigned long long [256];
-    int needleafs = 0;
+    unsigned long long *alphabet = new unsigned long long[256];
     for (int i = 0; i < 256; i++)
         alphabet[i] = 0;
-    FILE* input = fopen(file_name, "r");
+    FILE *input = fopen(file_name, "r");
     if (input == nullptr)
         throw invalid_argument("File not found.");
     char letter;
@@ -130,25 +92,33 @@ void coder(const char* file_name = "input.txt")
             alphabet[letter]++;
     }
     fclose(input);
-    knot* leafs = new knot [256];
+    priority_queue<knot, vector<knot>, knot> leafs;
+    cout << "------Alphabet------" << endl;
     for (int i = 0; i < 256; i++)
         if (alphabet[i] != 0)
         {
             knot new_leaf((char)i, alphabet[i]);
-            leafs[needleafs] = new_leaf;
-            needleafs++;
+            cout << (char)i << ":" << alphabet[i] << " : " << new_leaf << endl;
+            leafs.push(new_leaf);
         }
-    while (needleafs > 1)
+    cout << "------Tree------" << endl;
+    while (leafs.size() > 1)
     {
-       Hoar_sort(leafs, needleafs);
-       knot merger = leafs[needleafs - 1].merge_knots(leafs[needleafs - 2]);
-       leafs[needleafs - 2] = merger;
-       needleafs--;
+        knot* new_knot = new knot(leafs.top());
+        leafs.pop();
+        cout<< "Building: " << *new_knot << " + " << leafs.top() << endl;
+        leafs.push(*new_knot->join(*new knot(leafs.top())));
+        leafs.pop();
     }
-    knot tree = leafs[0];
-    delete[]leafs;
+    knot* tree = new knot(leafs.top());
     string* code_table = new string [256];
-    tree.coding(&tree, "", code_table);
+    tree->coding(tree, "", code_table);
+    cout << "------Huffman Codes------" << endl;
+    for (int i = 0; i < 256; i++)
+        cout << (char)i << ":" << code_table[i] << endl;
+    FILE* output = fopen(encoded_name, "w +");
+    input = fopen(file_name, "r");
+    letter = 0;
 }
 
 int main()
