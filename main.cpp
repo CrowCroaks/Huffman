@@ -71,7 +71,7 @@ public:
 
     void decode(unsigned long long *alphabet, FILE* input, FILE* output)
     {
-        knot* runner = this;
+        knot* runner = this;//Создаем бегунок,он будет проверять узлы дерева
         char symbol, letter;
         while (!feof(input))
         {
@@ -79,9 +79,9 @@ public:
             if(!feof(input))
                 for(int i = 7; i >= 0; i--)
                 {
-                    if(((letter >> i) & 1) == 1)
+                    if(((letter >> i) & 1) == 1)//Смотрим на биты символа, в зависимости от значения идем либо по правой, либо по левой ветке
                     {
-                        if (runner -> right == nullptr)
+                        if (runner -> right == nullptr)//Если дошли до листа записываем символ
                         {
                             symbol = runner -> key;
                             if(alphabet[symbol] > 0)
@@ -157,9 +157,9 @@ void decoder (const char* file_name = "output.txt", const char* decoded_name = "
     }
     knot* tree = new knot(leafs.top());//Указатель на получившееся дерево
     FILE* output = fopen(decoded_name, "w +");
-    tree->decode(alphabet, input, output);
+    tree->decode(alphabet, input, output);//Функция декодирования
     cout << "You did well!";
-    fclose(input);
+    fclose(input);//Проверка на правильность декодирования
     fclose(output);
     FILE*  final = fopen("decoded.txt", "r");
     FILE* initial = fopen("input.txt", "r");
