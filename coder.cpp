@@ -118,7 +118,7 @@ void coder(const char* file_name = "input.txt", const char* encoded_name = "outp
     cout << "------Huffman Codes------" << endl;
     for (int i = 0; i < 256; i++)
         cout << (char)i << ":" << code_table[i] << endl;
-    FILE* output = fopen(encoded_name, "w +");//Непосредственно начало кодирования файла
+    FILE* output = fopen(encoded_name, "wb");//Непосредственно начало кодирования файла
     input = fopen(file_name, "r");
     fputc(all_letters, output);
     for(int i=0; i<256; i++)//Формируем шапку, которая понадобится при декодировании: записываем символ + количество его вхождений(в виде массива символов)
